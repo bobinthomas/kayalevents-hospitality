@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────
+   KAYAL EVENTS — "Lagoon, after dark"
+   Same palette as kayalevents.com.au: marine-black canvas,
+   lagoon-green/ocean-blue accents, coral reserved for primary CTAs.
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --marine-black: #07151a;
+  --surface: #0e2329;
+  --surface-raised: #122d3a;
+  --border: #1c3d4f;
+  --border-soft: #163040;
+
+  --sand: #fbf7ef;
+  --sand-muted: #8ab5cc;
+
+  --lagoon-green: #2dba62;
+  --lagoon-bright: #3fcf72;
+  --ocean-blue: #1aa3dc;
+  --deep-marine: #0b6fb0;
+  --coral: #e8443b;
+  --coral-bright: #ef5a52;
+
+  --gold: #d4af6a;
+  --gold-bright: #e8c97e;
+}
+
+@theme inline {
+  --color-marine-black: var(--marine-black);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border: var(--border);
+  --color-border-soft: var(--border-soft);
+  --color-sand: var(--sand);
+  --color-sand-muted: var(--sand-muted);
+  --color-lagoon: var(--lagoon-green);
+  --color-lagoon-bright: var(--lagoon-bright);
+  --color-ocean: var(--ocean-blue);
+  --color-deep-marine: var(--deep-marine);
+  --color-coral: var(--coral);
+  --color-coral-bright: var(--coral-bright);
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+}
+
+body {
+  background: var(--marine-black);
+  color: var(--sand);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--lagoon-green);
+  color: var(--marine-black);
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  font-optical-sizing: auto;
+}
+
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--lagoon-green);
+}
+
+:focus-visible {
+  outline: 2px solid var(--lagoon-green);
+  outline-offset: 3px;
+}
