@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import type { ItinerarySchema, ResponseData } from "@/lib/itinerary-schema";
+import { isChoiceField, specialRequirementsKey, type ItinerarySchema, type ResponseData } from "@/lib/itinerary-schema";
 import { sortedSections } from "@/lib/day-type-presets";
 
 const styles = StyleSheet.create({
@@ -63,6 +63,12 @@ export function ItineraryPdfDocument({
                   <>
                     <Text style={styles.blockTitle}>{block.title}</Text>
                     <Text style={styles.blockContent}>{formatValue(responseData[block.id])}</Text>
+                    {isChoiceField(block) &&
+                      formatValue(responseData[specialRequirementsKey(block.id)]) !== "—" && (
+                        <Text style={styles.blockContent}>
+                          Special requirements: {formatValue(responseData[specialRequirementsKey(block.id)])}
+                        </Text>
+                      )}
                   </>
                 )}
               </View>

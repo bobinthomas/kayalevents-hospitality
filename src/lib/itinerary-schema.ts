@@ -49,6 +49,16 @@ export interface ItinerarySchema {
 
 export type ResponseData = Record<string, string | string[]>;
 
+/** Key under which a choice field's free-text "Special requirements" note is stored in ResponseData — kept alongside the choice itself rather than in the schema, so no migration is needed for existing forms. */
+export function specialRequirementsKey(blockId: string): string {
+  return `${blockId}__notes`;
+}
+
+/** Choice fields (single/multi select — cuisine, refreshments, etc.) get a companion "Special requirements" textarea; free-text fields (e.g. allergies) don't need one. */
+export function isChoiceField(block: FieldBlock): boolean {
+  return block.field.type !== "text";
+}
+
 export function fieldBlocksOf(schema: ItinerarySchema): FieldBlock[] {
   return schema.sections.flatMap((section) =>
     section.blocks.filter((block): block is FieldBlock => block.kind === "field")

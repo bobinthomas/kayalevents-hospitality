@@ -1,8 +1,14 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { missingRequiredFields, type ItinerarySchema, type ResponseData } from "@/lib/itinerary-schema";
+import {
+  missingRequiredFields,
+  specialRequirementsKey,
+  type ItinerarySchema,
+  type ResponseData,
+} from "@/lib/itinerary-schema";
 import { sortedSections } from "@/lib/day-type-presets";
+import { BASE_PATH } from "@/lib/base-path";
 import { InfoBlockCard } from "@/components/artist-form/info-block-card";
 import { TransportBlockCard } from "@/components/artist-form/transport-block-card";
 import { FieldInput } from "@/components/artist-form/field-input";
@@ -34,7 +40,7 @@ export default function ArtistFormPage({ params }: { params: Promise<{ token: st
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/public/get-form?token=${encodeURIComponent(token)}`)
+    fetch(`${BASE_PATH}/api/public/get-form?token=${encodeURIComponent(token)}`)
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Failed to load form");
@@ -81,7 +87,7 @@ export default function ArtistFormPage({ params }: { params: Promise<{ token: st
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/public/submit-form", {
+      const res = await fetch(`${BASE_PATH}/api/public/submit-form`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, response_data: responseData, turnstile_token: turnstileToken ?? "" }),
@@ -134,6 +140,10 @@ export default function ArtistFormPage({ params }: { params: Promise<{ token: st
                     value={responseData[block.id]}
                     onChange={(value) => setResponseData((prev) => ({ ...prev, [block.id]: value }))}
                     disabled={disabled}
+                    notesValue={responseData[specialRequirementsKey(block.id)] as string | undefined}
+                    onNotesChange={(value) =>
+                      setResponseData((prev) => ({ ...prev, [specialRequirementsKey(block.id)]: value }))
+                    }
                   />
                 );
               })}

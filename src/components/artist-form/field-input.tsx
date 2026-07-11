@@ -1,17 +1,21 @@
 "use client";
 
-import type { FieldBlock } from "@/lib/itinerary-schema";
+import { isChoiceField, type FieldBlock } from "@/lib/itinerary-schema";
 
 export function FieldInput({
   block,
   value,
   onChange,
   disabled,
+  notesValue,
+  onNotesChange,
 }: {
   block: FieldBlock;
   value: string | string[] | undefined;
   onChange: (value: string | string[]) => void;
   disabled: boolean;
+  notesValue?: string;
+  onNotesChange?: (value: string) => void;
 }) {
   const options = block.field.options ?? [];
 
@@ -72,6 +76,20 @@ export function FieldInput({
           rows={2}
           className="w-full rounded border border-border bg-marine-black px-3 py-2 text-sm text-sand disabled:opacity-60"
         />
+      )}
+
+      {isChoiceField(block) && onNotesChange && (
+        <div className="mt-3 border-t border-border-soft pt-3">
+          <div className="eyebrow mb-1">Special requirements</div>
+          <textarea
+            value={notesValue ?? ""}
+            onChange={(e) => onNotesChange(e.target.value)}
+            disabled={disabled}
+            rows={2}
+            placeholder="Anything specific about your menu or choice…"
+            className="w-full rounded border border-border bg-marine-black px-3 py-2 text-sm text-sand disabled:opacity-60"
+          />
+        </div>
       )}
     </div>
   );

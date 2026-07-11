@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { ItinerarySchema, ResponseData } from "@/lib/itinerary-schema";
+import { specialRequirementsKey, type ItinerarySchema, type ResponseData } from "@/lib/itinerary-schema";
 import { sortedSections } from "@/lib/day-type-presets";
 import { InfoBlockCard } from "@/components/artist-form/info-block-card";
 import { TransportBlockCard } from "@/components/artist-form/transport-block-card";
@@ -54,7 +54,12 @@ export default async function ResponseDetailPage({
                 if (block.kind === "info") return <InfoBlockCard key={block.id} block={block} />;
                 if (block.kind === "transport") return <TransportBlockCard key={block.id} block={block} />;
                 return (
-                  <FieldResponseCard key={block.id} block={block} value={responseData[block.id]} />
+                  <FieldResponseCard
+                    key={block.id}
+                    block={block}
+                    value={responseData[block.id]}
+                    notesValue={responseData[specialRequirementsKey(block.id)] as string | undefined}
+                  />
                 );
               })}
             </div>

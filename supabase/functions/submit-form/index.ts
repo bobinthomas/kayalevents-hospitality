@@ -83,10 +83,16 @@ Deno.serve(async (req) => {
   }
   const schema = form.form_schema as { sections: { blocks: SchemaFieldBlock[] }[] };
   const fieldBlocks = schema.sections.flatMap((section) => section.blocks.filter((b) => b.kind === "field"));
+  // Choice fields (single/multi select) also accept a "<id>__notes" companion
+  // key for the free-text "Special requirements" box — not its own schema
+  // block, so it's allowed explicitly here rather than via allowedKeys alone.
   const allowedKeys = new Set(fieldBlocks.map((b) => b.id));
+  const allowedNotesKeys = new Set(
+    fieldBlocks.filter((b) => b.field?.type !== "text").map((b) => `${b.id}__notes`)
+  );
   const filteredResponse: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(responseData)) {
-    if (allowedKeys.has(key)) filteredResponse[key] = value;
+    if (allowedKeys.has(key) || allowedNotesKeys.has(key)) filteredResponse[key] = value;
   }
 
   // Required-field validation — client-side JS can be bypassed, so this is
