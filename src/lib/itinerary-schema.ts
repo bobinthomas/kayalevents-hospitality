@@ -3,7 +3,9 @@ export type FieldType = "single_select" | "multi_select" | "text";
 export interface InfoBlock {
   id: string;
   kind: "info";
-  time: string | null;
+  /** Clock time range (HH:MM) this happens during. Either end may be blank; see `formatTimeRange`. */
+  timeStart: string | null;
+  timeEnd: string | null;
   title: string;
   content: string;
 }

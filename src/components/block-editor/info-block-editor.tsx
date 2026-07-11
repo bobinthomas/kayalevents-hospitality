@@ -18,11 +18,18 @@ export function InfoBlockEditor({
         className="mb-3 w-full border-0 border-b border-border-soft bg-transparent pb-1 text-sm font-medium text-sand focus:outline-none"
       />
       <div className="mb-2 flex items-center gap-3">
-        <label className="w-16 shrink-0 text-xs text-sand-muted">Time</label>
+        <label className="w-16 shrink-0 text-xs text-sand-muted">From</label>
         <input
           type="time"
-          value={block.time ?? ""}
-          onChange={(e) => onChange({ time: e.target.value || null })}
+          value={block.timeStart ?? ""}
+          onChange={(e) => onChange({ timeStart: e.target.value || null })}
+          className="rounded border border-border bg-marine-black px-2 py-1 text-sm text-sand"
+        />
+        <label className="shrink-0 text-xs text-sand-muted">To</label>
+        <input
+          type="time"
+          value={block.timeEnd ?? ""}
+          onChange={(e) => onChange({ timeEnd: e.target.value || null })}
           className="rounded border border-border bg-marine-black px-2 py-1 text-sm text-sand"
         />
       </div>

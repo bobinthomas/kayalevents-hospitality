@@ -48,6 +48,7 @@ export default async function EventLayout({
           templates: templatesCount ?? 0,
           forms: formsCount ?? 0,
           responses: responsesCount ?? 0,
+          plan: responsesCount ?? 0,
         }}
       />
       {children}

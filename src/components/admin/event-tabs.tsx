@@ -8,6 +8,7 @@ export const EVENT_TABS = [
   { slug: "templates", label: "Templates" },
   { slug: "forms", label: "Forms" },
   { slug: "responses", label: "Responses" },
+  { slug: "plan", label: "Plan" },
 ] as const;
 
 export type EventTabSlug = (typeof EVENT_TABS)[number]["slug"];

@@ -52,7 +52,10 @@ export function ItineraryPdfDocument({
                 {block.kind === "info" ? (
                   <>
                     <Text style={styles.blockTitle}>
-                      {block.time ? `${block.time} — ` : ""}
+                      {(() => {
+                        const time = formatTimeRange(block.timeStart, block.timeEnd);
+                        return time ? `${time} — ` : "";
+                      })()}
                       {block.title}
                     </Text>
                     <Text style={styles.blockContent}>{block.content}</Text>

@@ -8,7 +8,7 @@ import { TransportBlockEditor } from "./transport-block-editor";
 import { FoodEntryRow } from "./food-entry-row";
 
 function blankInfoBlock(): InfoBlock {
-  return { id: crypto.randomUUID(), kind: "info", time: null, title: "", content: "" };
+  return { id: crypto.randomUUID(), kind: "info", timeStart: null, timeEnd: null, title: "", content: "" };
 }
 
 function blankFoodBlock(): FieldBlock {

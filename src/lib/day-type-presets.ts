@@ -78,16 +78,31 @@ export function presetBlocksForDayType(dayType: DayType): Block[] {
   switch (dayType) {
     case "Arrival":
       return [
-        { id: crypto.randomUUID(), kind: "info", time: null, title: "Flight arrival", content: "" },
         {
           id: crypto.randomUUID(),
           kind: "info",
-          time: null,
+          timeStart: null,
+          timeEnd: null,
+          title: "Flight arrival",
+          content: "",
+        },
+        {
+          id: crypto.randomUUID(),
+          kind: "info",
+          timeStart: null,
+          timeEnd: null,
           title: "Expected baggage collection & exit",
           content: "",
         },
         transportBlock("Transport arrangement", "Airport pickup"),
-        { id: crypto.randomUUID(), kind: "info", time: null, title: "Estimated arrival at hotel", content: "" },
+        {
+          id: crypto.randomUUID(),
+          kind: "info",
+          timeStart: null,
+          timeEnd: null,
+          title: "Estimated arrival at hotel",
+          content: "",
+        },
         {
           id: crypto.randomUUID(),
           kind: "field",
@@ -110,8 +125,24 @@ export function presetBlocksForDayType(dayType: DayType): Block[] {
       ];
     case "Rehearsal Day":
       return [
+        {
+          id: crypto.randomUUID(),
+          kind: "info",
+          timeStart: null,
+          timeEnd: null,
+          title: "Rehearsal time",
+          content: "",
+        },
         cuisineField("Breakfast"),
         cuisineField("Lunch"),
+        {
+          id: crypto.randomUUID(),
+          kind: "info",
+          timeStart: null,
+          timeEnd: null,
+          title: "Break time",
+          content: "",
+        },
         cuisineField("Dinner"),
         {
           id: crypto.randomUUID(),
@@ -151,9 +182,23 @@ export function presetBlocksForDayType(dayType: DayType): Block[] {
     case "Departure Day":
       return [
         cuisineField("Breakfast"),
-        { id: crypto.randomUUID(), kind: "info", time: null, title: "Hotel checkout time", content: "" },
+        {
+          id: crypto.randomUUID(),
+          kind: "info",
+          timeStart: null,
+          timeEnd: null,
+          title: "Hotel checkout time",
+          content: "",
+        },
         transportBlock("Transport to airport", "Departure drop-off"),
-        { id: crypto.randomUUID(), kind: "info", time: null, title: "Flight departure", content: "" },
+        {
+          id: crypto.randomUUID(),
+          kind: "info",
+          timeStart: null,
+          timeEnd: null,
+          title: "Flight departure",
+          content: "",
+        },
       ];
     case "Custom":
     default:
