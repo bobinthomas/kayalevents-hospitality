@@ -85,6 +85,26 @@ export function FoodEntryRow({
           </select>
         </div>
 
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-sand-muted">From</label>
+          <input
+            type="time"
+            value={block.servedAtStart ?? ""}
+            onChange={(e) => onChange({ servedAtStart: e.target.value || null })}
+            className="rounded border border-border bg-marine-black px-2 py-1 text-sm text-sand"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-sand-muted">To</label>
+          <input
+            type="time"
+            value={block.servedAtEnd ?? ""}
+            onChange={(e) => onChange({ servedAtEnd: e.target.value || null })}
+            className="rounded border border-border bg-marine-black px-2 py-1 text-sm text-sand"
+          />
+        </div>
+
         <button type="button" onClick={onRemove} className="text-xs text-coral-bright hover:underline">
           Remove
         </button>

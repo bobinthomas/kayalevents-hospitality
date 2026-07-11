@@ -2,7 +2,9 @@
 
 import { use, useEffect, useState } from "react";
 import {
+  isSectionComplete,
   missingRequiredFields,
+  sectionIndexForBlock,
   specialRequirementsKey,
   type ItinerarySchema,
   type ResponseData,
@@ -38,6 +40,7 @@ export default function ArtistFormPage({ params }: { params: Promise<{ token: st
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
     fetch(`${BASE_PATH}/api/public/get-form?token=${encodeURIComponent(token)}`)
@@ -76,6 +79,9 @@ export default function ArtistFormPage({ params }: { params: Promise<{ token: st
 
     const missing = missingRequiredFields(data.form_schema, responseData);
     if (missing.length > 0) {
+      const orderedSections = sortedSections(data.form_schema.sections);
+      const jumpTo = sectionIndexForBlock(orderedSections, missing[0].id);
+      if (jumpTo !== -1) setStepIndex(jumpTo);
       setSubmitError(`Please answer required questions: ${missing.map((b) => b.title).join(", ")}`);
       return;
     }
@@ -114,6 +120,11 @@ export default function ArtistFormPage({ params }: { params: Promise<{ token: st
     );
   }
 
+  const orderedSections = sortedSections(data.form_schema.sections);
+  const currentIndex = Math.min(stepIndex, orderedSections.length - 1);
+  const currentSection = orderedSections[currentIndex];
+  const isLastStep = currentIndex === orderedSections.length - 1;
+
   return (
     <main className="mx-auto max-w-xl px-6 py-12">
       <h1 className="font-display mb-1 text-2xl">Hi {data.artist_name},</h1>
@@ -123,14 +134,46 @@ export default function ArtistFormPage({ params }: { params: Promise<{ token: st
 
       {data.locked && <div className="mb-6"><LockedBanner /></div>}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {sortedSections(data.form_schema.sections).map((section) => (
-          <div key={section.id}>
-            <h2 className="eyebrow mb-2">
-              {section.label} · {section.date}
-            </h2>
-            <div className="flex flex-col gap-3">
-              {section.blocks.map((block) => {
+      {orderedSections.length > 1 && (
+        <div className="mb-6 flex items-center justify-center gap-2">
+          {orderedSections.map((section, index) => {
+            const complete = isSectionComplete(section, responseData);
+            const active = index === currentIndex;
+            return (
+              <button
+                key={section.id}
+                type="button"
+                onClick={() => setStepIndex(index)}
+                aria-label={`Go to ${section.label}`}
+                aria-current={active}
+                className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                  active ? "bg-coral" : complete ? "bg-lagoon" : "bg-border"
+                }`}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {currentSection && (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          <div className="overflow-hidden rounded-lg border border-border-soft">
+            <div className="border-b-2 border-lagoon bg-surface-raised px-4 py-3">
+              <div className="eyebrow">
+                Day {currentIndex + 1} of {orderedSections.length}
+              </div>
+              <h2 className="font-display text-xl text-sand">{currentSection.label}</h2>
+              <p className="text-xs text-sand-muted">
+                {new Date(`${currentSection.date}T00:00:00`).toLocaleDateString(undefined, {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 p-4">
+              {currentSection.blocks.map((block) => {
                 if (block.kind === "info") return <InfoBlockCard key={block.id} block={block} />;
                 if (block.kind === "transport") return <TransportBlockCard key={block.id} block={block} />;
                 return (
@@ -149,22 +192,44 @@ export default function ArtistFormPage({ params }: { params: Promise<{ token: st
               })}
             </div>
           </div>
-        ))}
 
-        {!data.locked && (
-          <>
-            <TurnstileWidget onToken={setTurnstileToken} onExpire={() => setTurnstileToken(null)} />
-            {submitError && <p className="text-sm text-coral-bright">{submitError}</p>}
+          <div className="flex items-center justify-between gap-3">
             <button
-              type="submit"
-              disabled={disabled}
-              className="rounded bg-coral px-4 py-2 text-sand hover:bg-coral-bright disabled:opacity-50"
+              type="button"
+              onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
+              disabled={currentIndex === 0}
+              className="rounded border border-border px-4 py-2 text-sm text-sand-muted hover:bg-surface-raised disabled:opacity-40"
             >
-              {submitting ? "Submitting…" : "Submit preferences"}
+              Back
             </button>
-          </>
-        )}
-      </form>
+            {!isLastStep && (
+              <button
+                type="button"
+                onClick={() => setStepIndex((i) => Math.min(orderedSections.length - 1, i + 1))}
+                className="rounded bg-ocean px-4 py-2 text-sm text-sand hover:bg-deep-marine"
+              >
+                Next: {orderedSections[currentIndex + 1]?.label}
+              </button>
+            )}
+          </div>
+
+          {submitError && !isLastStep && <p className="text-sm text-coral-bright">{submitError}</p>}
+
+          {isLastStep && !data.locked && (
+            <>
+              <TurnstileWidget onToken={setTurnstileToken} onExpire={() => setTurnstileToken(null)} />
+              {submitError && <p className="text-sm text-coral-bright">{submitError}</p>}
+              <button
+                type="submit"
+                disabled={disabled}
+                className="rounded bg-coral px-4 py-2 text-sand hover:bg-coral-bright disabled:opacity-50"
+              >
+                {submitting ? "Submitting…" : "Submit preferences"}
+              </button>
+            </>
+          )}
+        </form>
+      )}
     </main>
   );
 }

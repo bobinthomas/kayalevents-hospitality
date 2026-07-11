@@ -1,13 +1,11 @@
-import type { InfoBlock } from "@/lib/itinerary-schema";
+import { to12Hour, type InfoBlock } from "@/lib/itinerary-schema";
 
 export function InfoBlockCard({ block }: { block: InfoBlock }) {
   return (
     <div className="rounded border border-border bg-surface p-4">
-      <div className="flex items-baseline gap-2">
-        {block.time && <span className="text-sm text-sand-muted">{block.time}</span>}
-        <span className="font-medium">{block.title}</span>
-      </div>
-      <p className="mt-1 text-sm text-sand-muted">{block.content}</p>
+      {block.time && <div className="text-2xl font-bold text-sand">{to12Hour(block.time)}</div>}
+      <div className="mt-1 font-bold text-sand">{block.title}</div>
+      {block.content && <p className="mt-2 text-sm text-sand-muted">{block.content}</p>}
     </div>
   );
 }

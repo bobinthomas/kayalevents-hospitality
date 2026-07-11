@@ -1,6 +1,6 @@
 "use client";
 
-import { isChoiceField, type FieldBlock } from "@/lib/itinerary-schema";
+import { formatTimeRange, isChoiceField, to12Hour, type FieldBlock } from "@/lib/itinerary-schema";
 
 export function FieldInput({
   block,
@@ -18,13 +18,16 @@ export function FieldInput({
   onNotesChange?: (value: string) => void;
 }) {
   const options = block.field.options ?? [];
+  const servedAt = formatTimeRange(to12Hour(block.servedAtStart), to12Hour(block.servedAtEnd));
 
   return (
     <div className="rounded border border-border bg-surface p-4">
-      <div className="mb-2 font-medium">
+      {servedAt && <div className="text-2xl font-bold text-sand">{servedAt}</div>}
+      <div className="mb-2 mt-1 font-bold text-sand">
         {block.title}
         {block.field.required && <span className="ml-1 text-coral-bright">*</span>}
       </div>
+      {block.description && <p className="-mt-1 mb-2 text-sm text-sand-muted">{block.description}</p>}
 
       {block.field.type === "single_select" && (
         <div className="flex flex-col gap-2">

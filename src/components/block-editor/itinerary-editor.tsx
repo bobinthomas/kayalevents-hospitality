@@ -16,6 +16,8 @@ function blankFoodBlock(): FieldBlock {
     id: crypto.randomUUID(),
     kind: "field",
     time: "Breakfast",
+    servedAtStart: null,
+    servedAtEnd: null,
     title: "Breakfast",
     field: { type: "single_select", required: true, options: OPTION_SETS.cuisine.options },
   };
@@ -37,7 +39,10 @@ function blankDetailsField(): FieldBlock {
     id: crypto.randomUUID(),
     kind: "field",
     time: null,
-    title: "Allergies / dietary requirements",
+    servedAtStart: null,
+    servedAtEnd: null,
+    description: "",
+    title: "",
     field: { type: "text", required: false },
   };
 }
@@ -228,7 +233,7 @@ export function ItineraryEditor({
               const foodBlocks = section.blocks.filter(
                 (b): b is FieldBlock => b.kind === "field" && b.field.type !== "text"
               );
-              const detailsField = section.blocks.find(
+              const detailsFields = section.blocks.filter(
                 (b): b is FieldBlock => b.kind === "field" && b.field.type === "text"
               );
 
@@ -326,29 +331,45 @@ export function ItineraryEditor({
                       >
                         + Add another
                       </button>
+                    </div>
+                  </div>
 
-                      <div className="flex items-start gap-3 border-t border-border-soft pt-3">
-                        <label className="w-16 shrink-0 pt-1 text-xs text-sand-muted">Details</label>
-                        {detailsField ? (
+                  <div>
+                    <h3 className="mb-2 text-sm font-medium text-sand-muted">Additional questions</h3>
+                    <div className="flex flex-col gap-3 rounded border border-border bg-surface p-3">
+                      {detailsFields.map((field) => (
+                        <div key={field.id} className="flex flex-col gap-2 border-b border-border-soft pb-3 last:border-b-0 last:pb-0">
+                          <div className="flex items-start gap-2">
+                            <input
+                              value={field.title}
+                              onChange={(e) => updateBlock(section.id, field.id, { title: e.target.value })}
+                              placeholder="Question (e.g. Allergies / dietary requirements)"
+                              className="flex-1 rounded border border-border bg-marine-black px-2 py-1 text-sm font-medium text-sand"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeBlock(section.id, field.id)}
+                              className="mt-1 text-xs text-coral-bright hover:underline"
+                            >
+                              Remove
+                            </button>
+                          </div>
                           <textarea
-                            value={detailsField.title}
-                            onChange={(e) =>
-                              updateBlock(section.id, detailsField.id, { title: e.target.value })
-                            }
+                            value={field.description ?? ""}
+                            onChange={(e) => updateBlock(section.id, field.id, { description: e.target.value })}
                             rows={1}
-                            placeholder="Allergies / dietary requirements"
+                            placeholder="Optional instructions shown above the answer box"
                             className="w-full rounded border border-border bg-marine-black px-2 py-1 text-sm text-sand"
                           />
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => addBlockToSection(section.id, blankDetailsField())}
-                            className="rounded border border-border px-2 py-1 text-xs text-sand-muted hover:bg-surface-raised"
-                          >
-                            + Add details field
-                          </button>
-                        )}
-                      </div>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => addBlockToSection(section.id, blankDetailsField())}
+                        className="self-start rounded border border-border px-2 py-1 text-xs text-sand-muted hover:bg-surface-raised"
+                      >
+                        + Add question
+                      </button>
                     </div>
                   </div>
                 </div>

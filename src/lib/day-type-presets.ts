@@ -55,6 +55,8 @@ function cuisineField(meal: "Breakfast" | "Lunch" | "Dinner"): Block {
     id: crypto.randomUUID(),
     kind: "field",
     time: meal,
+    servedAtStart: null,
+    servedAtEnd: null,
     title: `${meal} cuisine preference`,
     field: { type: "single_select", required: true, options: CUISINE_OPTIONS },
   };
@@ -90,6 +92,8 @@ export function presetBlocksForDayType(dayType: DayType): Block[] {
           id: crypto.randomUUID(),
           kind: "field",
           time: null,
+          servedAtStart: null,
+          servedAtEnd: null,
           title: "Refreshments upon arrival",
           field: { type: "single_select", required: false, options: OPTION_SETS.refreshments.options },
         },
@@ -98,11 +102,27 @@ export function presetBlocksForDayType(dayType: DayType): Block[] {
           id: crypto.randomUUID(),
           kind: "field",
           time: null,
+          servedAtStart: null,
+          servedAtEnd: null,
           title: "Allergies / dietary requirements",
           field: { type: "text", required: false },
         },
       ];
     case "Rehearsal Day":
+      return [
+        cuisineField("Breakfast"),
+        cuisineField("Lunch"),
+        cuisineField("Dinner"),
+        {
+          id: crypto.randomUUID(),
+          kind: "field",
+          time: null,
+          servedAtStart: null,
+          servedAtEnd: null,
+          title: "Allergies / dietary requirements",
+          field: { type: "text", required: false },
+        },
+      ];
     case "Event Day":
       return [
         cuisineField("Breakfast"),
@@ -112,7 +132,19 @@ export function presetBlocksForDayType(dayType: DayType): Block[] {
           id: crypto.randomUUID(),
           kind: "field",
           time: null,
+          servedAtStart: null,
+          servedAtEnd: null,
           title: "Allergies / dietary requirements",
+          field: { type: "text", required: false },
+        },
+        {
+          id: crypto.randomUUID(),
+          kind: "field",
+          time: null,
+          servedAtStart: null,
+          servedAtEnd: null,
+          title: "Venue Visit Plan Based on Individual Duties and Responsibilities for the Event Day",
+          description: "Please outline your event day plan and assigned duties.",
           field: { type: "text", required: false },
         },
       ];
