@@ -358,7 +358,7 @@ export function ItineraryEditor({
                             value={field.description ?? ""}
                             onChange={(e) => updateBlock(section.id, field.id, { description: e.target.value })}
                             rows={1}
-                            placeholder="Optional instructions shown above the answer box"
+                            placeholder="Optional footnote shown below the answer box"
                             className="w-full rounded border border-border bg-marine-black px-2 py-1 text-sm text-sand"
                           />
                         </div>

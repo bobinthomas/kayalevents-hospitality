@@ -128,13 +128,16 @@ export function FoodEntryRow({
         />
       )}
 
-      <textarea
-        value={block.description ?? ""}
-        onChange={(e) => onChange({ description: e.target.value })}
-        rows={1}
-        placeholder="Optional note shown to the artist above the choices"
-        className="w-full rounded border border-border bg-marine-black px-2 py-1 text-sm text-sand"
-      />
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-sand-muted">Additional details</label>
+        <textarea
+          value={block.description ?? ""}
+          onChange={(e) => onChange({ description: e.target.value })}
+          rows={1}
+          placeholder="Optional footnote shown to the artist below this question"
+          className="w-full rounded border border-border bg-marine-black px-2 py-1 text-sm text-sand"
+        />
+      </div>
     </div>
   );
 }

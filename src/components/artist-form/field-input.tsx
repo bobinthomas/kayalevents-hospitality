@@ -27,7 +27,6 @@ export function FieldInput({
         {block.title}
         {block.field.required && <span className="ml-1 text-coral-bright">*</span>}
       </div>
-      {block.description && <p className="-mt-1 mb-2 text-sm text-sand-muted">{block.description}</p>}
 
       {block.field.type === "single_select" && (
         <div className="flex flex-col gap-2">
@@ -93,6 +92,12 @@ export function FieldInput({
             className="w-full rounded border border-border bg-marine-black px-3 py-2 text-sm text-sand disabled:opacity-60"
           />
         </div>
+      )}
+
+      {block.description && (
+        <p className="mt-3 border-t border-border-soft pt-3 text-xs italic text-sand-muted">
+          {block.description}
+        </p>
       )}
     </div>
   );
