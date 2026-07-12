@@ -127,6 +127,14 @@ export function FoodEntryRow({
           className="w-full rounded border border-border bg-marine-black px-2 py-1 text-sm text-sand"
         />
       )}
+
+      <textarea
+        value={block.description ?? ""}
+        onChange={(e) => onChange({ description: e.target.value })}
+        rows={1}
+        placeholder="Optional note shown to the artist above the choices"
+        className="w-full rounded border border-border bg-marine-black px-2 py-1 text-sm text-sand"
+      />
     </div>
   );
 }

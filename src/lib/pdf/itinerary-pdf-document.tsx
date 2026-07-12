@@ -2,6 +2,7 @@ import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import {
   formatTimeRange,
   isChoiceField,
+  sortedBlocks,
   specialRequirementsKey,
   type ItinerarySchema,
   type ResponseData,
@@ -47,7 +48,7 @@ export function ItineraryPdfDocument({
             <Text style={styles.sectionTitle}>
               {section.label} · {section.date}
             </Text>
-            {section.blocks.map((block) => (
+            {sortedBlocks(section.blocks).map((block) => (
               <View key={block.id} style={styles.block}>
                 {block.kind === "info" ? (
                   <>

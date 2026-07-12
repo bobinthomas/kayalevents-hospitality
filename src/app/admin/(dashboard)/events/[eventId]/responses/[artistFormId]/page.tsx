@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { specialRequirementsKey, type ItinerarySchema, type ResponseData } from "@/lib/itinerary-schema";
+import { sortedBlocks, specialRequirementsKey, type ItinerarySchema, type ResponseData } from "@/lib/itinerary-schema";
 import { sortedSections } from "@/lib/day-type-presets";
 import { InfoBlockCard } from "@/components/artist-form/info-block-card";
 import { TransportBlockCard } from "@/components/artist-form/transport-block-card";
@@ -50,7 +50,7 @@ export default async function ResponseDetailPage({
               {section.label} · {section.date}
             </h3>
             <div className="flex flex-col gap-3">
-              {section.blocks.map((block) => {
+              {sortedBlocks(section.blocks).map((block) => {
                 if (block.kind === "info") return <InfoBlockCard key={block.id} block={block} />;
                 if (block.kind === "transport") return <TransportBlockCard key={block.id} block={block} />;
                 return (

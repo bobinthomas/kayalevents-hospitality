@@ -5,6 +5,7 @@ import {
   isSectionComplete,
   missingRequiredFields,
   sectionIndexForBlock,
+  sortedBlocks,
   specialRequirementsKey,
   type ItinerarySchema,
   type ResponseData,
@@ -172,7 +173,7 @@ export default function ArtistFormPage({ params }: { params: Promise<{ token: st
               </p>
             </div>
             <div className="flex flex-col gap-3 p-4">
-              {currentSection.blocks.map((block) => {
+              {sortedBlocks(currentSection.blocks).map((block) => {
                 if (block.kind === "info") return <InfoBlockCard key={block.id} block={block} />;
                 if (block.kind === "transport") return <TransportBlockCard key={block.id} block={block} />;
                 return (

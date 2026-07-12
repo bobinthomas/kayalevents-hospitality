@@ -112,3 +112,20 @@ export function isSectionComplete(section: Section, responseData: ResponseData):
 export function sectionIndexForBlock(sections: Section[], blockId: string): number {
   return sections.findIndex((section) => section.blocks.some((block) => block.id === blockId));
 }
+
+function blockStartTime(block: Block): string | null {
+  if (block.kind === "info") return block.timeStart;
+  if (block.kind === "field") return block.servedAtStart;
+  return block.time;
+}
+
+/**
+ * Chronological display order for a day's blocks, by start time (untimed
+ * blocks sort last, original relative order preserved otherwise — relies on
+ * Array#sort being stable). Derived at render time, same as `sortedSections`,
+ * so blocks added out of order (or before times existed) still display
+ * correctly everywhere without a data migration.
+ */
+export function sortedBlocks<T extends Block>(blocks: T[]): T[] {
+  return [...blocks].sort((a, b) => (blockStartTime(a) ?? "99:99").localeCompare(blockStartTime(b) ?? "99:99"));
+}
