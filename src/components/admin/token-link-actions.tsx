@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
-import { BASE_PATH } from "@/lib/base-path";
 
 function subscribe() {
   return () => {};
@@ -18,7 +17,7 @@ function getServerOrigin() {
 export function TokenLinkActions({ token }: { token: string }) {
   const [copied, setCopied] = useState(false);
   const origin = useSyncExternalStore(subscribe, getOrigin, getServerOrigin);
-  const url = origin ? `${origin}${BASE_PATH}/f/${token}` : "";
+  const url = origin ? `${origin}/f/${token}` : "";
 
   async function handleCopy() {
     await navigator.clipboard.writeText(url);

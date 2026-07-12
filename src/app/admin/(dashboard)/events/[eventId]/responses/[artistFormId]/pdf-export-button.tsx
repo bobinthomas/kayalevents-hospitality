@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { BASE_PATH } from "@/lib/base-path";
 
 export function PdfExportButton({ artistFormId }: { artistFormId: string }) {
   const [loading, setLoading] = useState(false);
@@ -11,7 +10,7 @@ export function PdfExportButton({ artistFormId }: { artistFormId: string }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${BASE_PATH}/api/admin/forms/${artistFormId}/pdf`, { method: "POST" });
+      const res = await fetch(`/api/admin/forms/${artistFormId}/pdf`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Export failed");
       window.open(data.url, "_blank", "noopener,noreferrer");
