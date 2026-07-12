@@ -43,6 +43,14 @@ export default function ArtistFormPage({ params }: { params: Promise<{ token: st
   const [submitted, setSubmitted] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
 
+  // Scrolling happens via the Back/Next buttons and progress dots, which sit
+  // below the current day's content — without this, switching days leaves
+  // the viewport wherever it was (usually the bottom) instead of showing the
+  // new day's header and first input.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [stepIndex]);
+
   useEffect(() => {
     fetch(`/api/public/get-form?token=${encodeURIComponent(token)}`)
       .then(async (res) => {
