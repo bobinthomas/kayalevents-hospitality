@@ -19,6 +19,8 @@ export interface FieldBlock {
   servedAtEnd: string | null;
   /** Optional instructional text shown between the title and the input — e.g. "Please outline your event day plan and assigned duties." */
   description?: string;
+  /** When true, excluded from the artist-facing form — still visible/editable in the admin template & form builder (e.g. Allergies/dietary requirements, collected by other means). */
+  hiddenFromArtist?: boolean;
   title: string;
   field: {
     type: FieldType;
@@ -71,6 +73,17 @@ export interface ItinerarySchema {
   sections: Section[];
 }
 
+/** Deep-copies a schema with fresh section/block ids — used when copying one artist's plan onto another's form, so the two forms' response_data never collide on shared ids. */
+export function cloneSchemaWithFreshIds(schema: ItinerarySchema): ItinerarySchema {
+  return {
+    sections: schema.sections.map((section) => ({
+      ...section,
+      id: crypto.randomUUID(),
+      blocks: section.blocks.map((block) => ({ ...block, id: crypto.randomUUID() })),
+    })),
+  };
+}
+
 export type ResponseData = Record<string, string | string[]>;
 
 /** Key under which a choice field's free-text "Special requirements" note is stored in ResponseData — kept alongside the choice itself rather than in the schema, so no migration is needed for existing forms. */
@@ -83,10 +96,16 @@ export function isChoiceField(block: FieldBlock): boolean {
   return block.field.type !== "text";
 }
 
+/** Field blocks the artist actually sees — excludes admin-only (`hiddenFromArtist`) questions, so completion/validation never depends on a question the artist can't answer. */
 export function fieldBlocksOf(schema: ItinerarySchema): FieldBlock[] {
   return schema.sections.flatMap((section) =>
-    section.blocks.filter((block): block is FieldBlock => block.kind === "field")
+    section.blocks.filter((block): block is FieldBlock => block.kind === "field" && !block.hiddenFromArtist)
   );
+}
+
+/** A section's blocks minus any marked `hiddenFromArtist` — what actually renders on the public form. */
+export function visibleBlocks<T extends Block>(blocks: T[]): T[] {
+  return blocks.filter((block) => !(block.kind === "field" && block.hiddenFromArtist));
 }
 
 export function isFieldAnswered(field: FieldBlock["field"], value: string | string[] | undefined): boolean {
@@ -104,7 +123,7 @@ export function missingRequiredFields(schema: ItinerarySchema, responseData: Res
 /** True once every required field block in this one day has an answer — drives the step-wizard's per-day progress dots. */
 export function isSectionComplete(section: Section, responseData: ResponseData): boolean {
   return section.blocks
-    .filter((block): block is FieldBlock => block.kind === "field")
+    .filter((block): block is FieldBlock => block.kind === "field" && !block.hiddenFromArtist)
     .every((block) => !block.field.required || isFieldAnswered(block.field, responseData[block.id]));
 }
 
@@ -120,12 +139,24 @@ function blockStartTime(block: Block): string | null {
 }
 
 /**
- * Chronological display order for a day's blocks, by start time (untimed
- * blocks sort last, original relative order preserved otherwise — relies on
- * Array#sort being stable). Derived at render time, same as `sortedSections`,
- * so blocks added out of order (or before times existed) still display
- * correctly everywhere without a data migration.
+ * Chronological display order for a day's blocks, by start time. Untimed
+ * blocks (e.g. a Transport arrangement with no clock time set) don't have a
+ * time of their own to sort by, so they inherit the last known time from the
+ * nearest preceding timed block in storage order (forward-fill) — this keeps
+ * them anchored next to the neighbor they were authored beside instead of
+ * all collapsing to the end of the day behind every timed block. Ties (equal
+ * or inherited keys) fall back to original array order (stable). Derived at
+ * render time, same as `sortedSections`, so blocks added/edited out of order
+ * still display correctly everywhere without a data migration.
  */
 export function sortedBlocks<T extends Block>(blocks: T[]): T[] {
-  return [...blocks].sort((a, b) => (blockStartTime(a) ?? "99:99").localeCompare(blockStartTime(b) ?? "99:99"));
+  let lastKnownTime = "00:00";
+  return blocks
+    .map((block, index) => {
+      const time = blockStartTime(block);
+      if (time) lastKnownTime = time;
+      return { block, index, key: time ?? lastKnownTime };
+    })
+    .sort((a, b) => a.key.localeCompare(b.key) || a.index - b.index)
+    .map((entry) => entry.block);
 }

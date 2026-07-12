@@ -120,6 +120,7 @@ export function presetBlocksForDayType(dayType: DayType): Block[] {
           servedAtStart: null,
           servedAtEnd: null,
           title: "Allergies / dietary requirements",
+          hiddenFromArtist: true,
           field: { type: "text", required: false },
         },
       ];
@@ -151,6 +152,7 @@ export function presetBlocksForDayType(dayType: DayType): Block[] {
           servedAtStart: null,
           servedAtEnd: null,
           title: "Allergies / dietary requirements",
+          hiddenFromArtist: true,
           field: { type: "text", required: false },
         },
       ];
@@ -166,6 +168,7 @@ export function presetBlocksForDayType(dayType: DayType): Block[] {
           servedAtStart: null,
           servedAtEnd: null,
           title: "Allergies / dietary requirements",
+          hiddenFromArtist: true,
           field: { type: "text", required: false },
         },
         {
@@ -191,6 +194,14 @@ export function presetBlocksForDayType(dayType: DayType): Block[] {
           content: "",
         },
         transportBlock("Transport to airport", "Departure drop-off"),
+        {
+          id: crypto.randomUUID(),
+          kind: "info",
+          timeStart: null,
+          timeEnd: null,
+          title: "Flight check-in",
+          content: "",
+        },
         {
           id: crypto.randomUUID(),
           kind: "info",

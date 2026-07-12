@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { renderToBuffer } from "@react-pdf/renderer";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { ItineraryPdfDocument } from "@/lib/pdf/itinerary-pdf-document";
+import { generateFormPdfBuffer } from "@/lib/pdf/generate-form-pdf";
 import type { ItinerarySchema, ResponseData } from "@/lib/itinerary-schema";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -31,14 +30,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const eventName = (form.events as unknown as { name: string } | null)?.name ?? "Event";
 
   try {
-    const buffer = await renderToBuffer(
-      <ItineraryPdfDocument
-        artistName={artistName}
-        eventName={eventName}
-        schema={form.form_schema as ItinerarySchema}
-        responseData={form.response_data as ResponseData}
-      />
-    );
+    const buffer = await generateFormPdfBuffer({
+      artistName,
+      eventName,
+      schema: form.form_schema as ItinerarySchema,
+      responseData: form.response_data as ResponseData,
+    });
 
     const admin = createAdminSupabaseClient();
     const path = `${form.event_id}/${form.id}.pdf`;

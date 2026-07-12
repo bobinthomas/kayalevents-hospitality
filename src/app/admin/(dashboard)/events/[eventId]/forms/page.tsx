@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { GenerateFormButton } from "./generate-form-button";
+import { CopyPlanControl } from "./copy-plan-control";
 
 export default async function FormsPage({
   params,
@@ -28,10 +29,15 @@ export default async function FormsPage({
     if (!latestFormByArtist.has(form.artist_id)) latestFormByArtist.set(form.artist_id, form);
   }
 
+  const artistNameById = new Map((artists ?? []).map((a) => [a.id, a.name]));
+
   return (
     <ul className="flex flex-col gap-2">
       {(artists ?? []).map((artist) => {
         const form = latestFormByArtist.get(artist.id);
+        const copySources = [...latestFormByArtist.entries()]
+          .filter(([artistId]) => artistId !== artist.id)
+          .map(([artistId, f]) => ({ formId: f.id, artistName: artistNameById.get(artistId) ?? "Unknown" }));
         return (
           <li
             key={artist.id}
@@ -41,19 +47,27 @@ export default async function FormsPage({
               <span className="font-medium">{artist.name}</span>{" "}
               <span className="text-sm text-sand-muted">{artist.role}</span>
             </div>
-            {form ? (
-              <div className="flex items-center gap-3">
-                <StatusBadge status={form.status} deadline={form.deadline} />
-                <Link
-                  href={`/admin/events/${eventId}/forms/${form.id}`}
-                  className="text-sm text-ocean hover:underline"
-                >
-                  Edit
-                </Link>
-              </div>
-            ) : (
-              <GenerateFormButton eventId={eventId} artistId={artist.id} />
-            )}
+            <div className="flex items-center gap-3">
+              {form ? (
+                <>
+                  <StatusBadge status={form.status} deadline={form.deadline} />
+                  <Link
+                    href={`/admin/events/${eventId}/forms/${form.id}`}
+                    className="text-sm text-ocean hover:underline"
+                  >
+                    Edit
+                  </Link>
+                </>
+              ) : (
+                <GenerateFormButton eventId={eventId} artistId={artist.id} />
+              )}
+              <CopyPlanControl
+                eventId={eventId}
+                targetArtistId={artist.id}
+                sources={copySources}
+                hasExistingForm={Boolean(form)}
+              />
+            </div>
           </li>
         );
       })}

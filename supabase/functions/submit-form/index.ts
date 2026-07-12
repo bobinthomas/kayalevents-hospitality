@@ -123,5 +123,26 @@ Deno.serve(async (req) => {
     return json({ error: "failed to save response" }, 500);
   }
 
+  // Pre-warm the admin's PDF export for this submission — best-effort, never
+  // blocks or fails the artist's submission. EdgeRuntime.waitUntil lets this
+  // keep running after the response below is sent, instead of being cut off.
+  const appUrl = Deno.env.get("HOSPITALITY_APP_URL");
+  const internalSecret = Deno.env.get("INTERNAL_API_SECRET");
+  if (appUrl && internalSecret) {
+    const generatePdf = fetch(`${appUrl}/api/internal/generate-submission-pdf`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-internal-secret": internalSecret },
+      body: JSON.stringify({ formId: form.id }),
+    }).catch((err) => console.error("generate-submission-pdf failed", err));
+
+    // @ts-expect-error - EdgeRuntime is a Supabase Edge Functions global, not in Deno's lib types
+    if (typeof EdgeRuntime !== "undefined") {
+      // @ts-expect-error - see above
+      EdgeRuntime.waitUntil(generatePdf);
+    } else {
+      await generatePdf;
+    }
+  }
+
   return json({ ok: true });
 });

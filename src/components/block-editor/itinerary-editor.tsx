@@ -354,6 +354,30 @@ export function ItineraryEditor({
                               Remove
                             </button>
                           </div>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <label className="text-xs text-sand-muted">From</label>
+                            <input
+                              type="time"
+                              value={field.servedAtStart ?? ""}
+                              onChange={(e) => updateBlock(section.id, field.id, { servedAtStart: e.target.value || null })}
+                              className="rounded border border-border bg-marine-black px-2 py-1 text-sm text-sand"
+                            />
+                            <label className="text-xs text-sand-muted">To</label>
+                            <input
+                              type="time"
+                              value={field.servedAtEnd ?? ""}
+                              onChange={(e) => updateBlock(section.id, field.id, { servedAtEnd: e.target.value || null })}
+                              className="rounded border border-border bg-marine-black px-2 py-1 text-sm text-sand"
+                            />
+                            <label className="flex items-center gap-1.5 text-xs text-sand-muted">
+                              <input
+                                type="checkbox"
+                                checked={field.hiddenFromArtist ?? false}
+                                onChange={(e) => updateBlock(section.id, field.id, { hiddenFromArtist: e.target.checked })}
+                              />
+                              Hide from artist form
+                            </label>
+                          </div>
                           <textarea
                             value={field.description ?? ""}
                             onChange={(e) => updateBlock(section.id, field.id, { description: e.target.value })}
