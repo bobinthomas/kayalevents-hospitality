@@ -5,8 +5,9 @@ import type { AttentionItem, DaySection as DaySectionData, PersonItinerary, Stat
 import { StatusStrip } from "./status-strip";
 import { AttentionPanel } from "./attention-panel";
 import { DaySection } from "./day-section";
-import { ViewToggle, type PlanView } from "./view-toggle";
-import { PersonView } from "./person-view";
+import { DayTabs } from "./day-tabs";
+import { PersonFilter } from "./person-filter";
+import { PersonDayCard } from "./person-day-card";
 
 function nextUpcomingDayLabel(days: DaySectionData[]): string | null {
   const todayIso = new Date().toISOString().slice(0, 10);
@@ -26,61 +27,30 @@ export function PlanDashboardClient({
   statusStrip: StatusStripMetrics;
   personItineraries: Record<string, PersonItinerary>;
 }) {
-  const [view, setView] = useState<PlanView>("day");
-  const [selectedPerson, setSelectedPerson] = useState<string | null>(Object.keys(personItineraries)[0] ?? null);
-  const [expandedDays, setExpandedDays] = useState<Set<string>>(() => {
-    const autoExpand = nextUpcomingDayLabel(days);
-    return new Set(autoExpand ? [autoExpand] : []);
-  });
+  const [selectedDay, setSelectedDay] = useState<string | null>(() => nextUpcomingDayLabel(days));
+  const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
 
-  function toggleDay(label: string) {
-    setExpandedDays((prev) => {
-      const next = new Set(prev);
-      if (next.has(label)) next.delete(label);
-      else next.add(label);
-      return next;
-    });
-  }
+  const currentDay = days.find((d) => d.label === selectedDay) ?? null;
+  const currentPersonDay = selectedPerson
+    ? personItineraries[selectedPerson]?.days.find((d) => d.label === selectedDay)
+    : undefined;
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <StatusStrip metrics={statusStrip} />
-        <ViewToggle view={view} onChange={setView} />
-      </div>
+      <StatusStrip metrics={statusStrip} />
 
-      {view === "day" ? (
-        <div className="flex flex-col gap-6">
-          <AttentionPanel items={attentionItems} eventId={eventId} />
-          {days.map((day) => (
-            <DaySection
-              key={day.label}
-              day={day}
-              expanded={expandedDays.has(day.label)}
-              onToggle={() => toggleDay(day.label)}
-            />
-          ))}
-          {days.length === 0 && <p className="text-sm text-sand-muted">No days scheduled yet.</p>}
-        </div>
+      {days.length > 0 && <DayTabs days={days} selected={selectedDay} onSelect={setSelectedDay} />}
+
+      <AttentionPanel items={attentionItems} eventId={eventId} />
+
+      <PersonFilter people={Object.keys(personItineraries)} selected={selectedPerson} onSelect={setSelectedPerson} />
+
+      {selectedPerson ? (
+        <PersonDayCard artistName={selectedPerson} day={currentPersonDay} />
+      ) : currentDay ? (
+        <DaySection day={currentDay} />
       ) : (
-        <div className="flex flex-col gap-4">
-          <select
-            value={selectedPerson ?? ""}
-            onChange={(e) => setSelectedPerson(e.target.value)}
-            className="w-fit rounded border border-border bg-marine-black px-3 py-1.5 text-sm text-sand"
-          >
-            {Object.values(personItineraries).map((p) => (
-              <option key={p.artistName} value={p.artistName}>
-                {p.artistName} ({p.artistRole})
-              </option>
-            ))}
-          </select>
-          {selectedPerson && personItineraries[selectedPerson] ? (
-            <PersonView person={personItineraries[selectedPerson]} />
-          ) : (
-            <p className="text-sm text-sand-muted">No roster members with a generated form yet.</p>
-          )}
-        </div>
+        <p className="text-sm text-sand-muted">No days scheduled yet.</p>
       )}
     </div>
   );

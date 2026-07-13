@@ -173,7 +173,7 @@ export default function ArtistFormPage({ params }: { params: Promise<{ token: st
               </div>
               <h2 className="font-display text-xl text-sand">{currentSection.label}</h2>
               <p className="text-xs text-sand-muted">
-                {new Date(`${currentSection.date}T00:00:00`).toLocaleDateString(undefined, {
+                {new Date(`${currentSection.date}T00:00:00`).toLocaleDateString("en-AU", {
                   weekday: "long",
                   day: "numeric",
                   month: "long",

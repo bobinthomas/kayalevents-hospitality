@@ -18,6 +18,13 @@ const STALE_DAYS = 2;
 export type ScheduleCategory = "travel" | "transportation";
 export type MealCategory = "meals" | "refreshments";
 
+/** Shared category → display label mapping, used by both the full-roster day view and the single-person day view so the grouping stays identical between them. */
+export const SCHEDULE_GROUP_LABELS: { category: ScheduleCategory | null; label: string }[] = [
+  { category: null, label: "Other" },
+  { category: "travel", label: "Travel (Flights)" },
+  { category: "transportation", label: "Transportation (To & Fro)" },
+];
+
 /** Info/transport blocks are categorized by kind + title keyword — there's no category field on the block itself (no schema change), so this is a heuristic, not stored data. Hotel check-in/out counts as Transportation (it's part of the arrival/departure journey), and anything that doesn't match (Rehearsal time, Break time, …) is left uncategorized on purpose rather than forced into one of the four buckets. */
 function classifyScheduleBlock(block: Block): ScheduleCategory | null {
   if (block.kind === "transport") return "transportation";
