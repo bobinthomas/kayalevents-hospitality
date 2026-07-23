@@ -73,6 +73,17 @@ Also needed, done once via the Supabase dashboard (not scripted — see comment 
 
 Env vars are read via `getRuntimeEnv()` (`src/lib/runtime-env.ts`), which checks `process.env` first and falls back to the Cloudflare Workers `env` binding — `process.env` alone can be empty at runtime on Workers.
 
+## Roles & event assignment
+
+Two roles, stored in `auth.users.app_metadata.role` (set only via the Admin API — unlike `user_metadata`, this can't be edited by the signed-in user, so it's safe to trust server-side):
+
+- **admin** — sees every event on `/admin`, can create events, and can assign a login to any event.
+- **event_user** — scoped to only the event(s) assigned to them (`events.assigned_user_id`, a plain FK — one user can be assigned many events, but an event has at most one assigned user). Full access to that event's five tabs (Templates/Roster/Forms/Responses/Plan); everything else is invisible, enforced by RLS (`supabase/migrations/0003_event_assignment.sql`) — an event_user querying an event they're not assigned to gets the same `notFound()` as a bad ID.
+
+`/admin` branches on role (`src/lib/supabase/roles.ts`): an event_user with exactly one assigned event is redirected straight to its Roster page; with more than one, they see a stripped "Your events" list (no create-event form). An admin assigns/reassigns a login inline on each event row on `/admin` (email + password set directly by the admin, same as the existing admin account — no invite-email flow) via `assignEventUser` in `events/actions.ts`, which looks up an existing auth user by email before creating a new one so the same person can be reused across events.
+
+New admin account (there's currently no signup flow — every login, including the first admin, is provisioned via the Supabase dashboard or Admin API): after creating the auth user, run `node scripts/set-admin-role.mjs <email>` once to tag it `role: admin` — without this it's neither an admin nor assigned to any event, and `/admin` shows a not-configured message.
+
 ## Admin flows
 
 - **Templates** (`/admin/events/[eventId]/templates`) — one schema per role, edited via the shared `ItineraryEditor` block builder (also used for per-artist snapshot edits).
