@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { GenerateFormButton } from "./generate-form-button";
 import { CopyPlanControl } from "./copy-plan-control";
+import { ResetToTemplateControl } from "./reset-to-template-control";
 
 export default async function FormsPage({
   params,
@@ -30,9 +31,16 @@ export default async function FormsPage({
   }
 
   const artistNameById = new Map((artists ?? []).map((a) => [a.id, a.name]));
+  const allFormIds = [...latestFormByArtist.values()].map((f) => f.id);
 
   return (
-    <ul className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
+      {allFormIds.length > 0 && (
+        <div className="flex justify-end">
+          <ResetToTemplateControl eventId={eventId} formIds={allFormIds} label="Reset all forms to template" />
+        </div>
+      )}
+      <ul className="flex flex-col gap-2">
       {(artists ?? []).map((artist) => {
         const form = latestFormByArtist.get(artist.id);
         const copySources = [...latestFormByArtist.entries()]
@@ -57,6 +65,7 @@ export default async function FormsPage({
                   >
                     Edit
                   </Link>
+                  <ResetToTemplateControl eventId={eventId} formIds={[form.id]} label="Reset" />
                 </>
               ) : (
                 <GenerateFormButton eventId={eventId} artistId={artist.id} />
@@ -74,6 +83,7 @@ export default async function FormsPage({
       {(artists ?? []).length === 0 && (
         <li className="text-sm text-sand-muted">Add artists to the roster first.</li>
       )}
-    </ul>
+      </ul>
+    </div>
   );
 }

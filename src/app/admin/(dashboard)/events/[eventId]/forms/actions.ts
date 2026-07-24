@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { generateFormToken } from "@/lib/token";
-import { cloneSchemaWithFreshIds, type ItinerarySchema } from "@/lib/itinerary-schema";
+import { cloneSchemaWithFreshIds, syncResponseDataToTemplate, type ItinerarySchema, type ResponseData } from "@/lib/itinerary-schema";
 
 export interface GenerateFormState {
   error?: string;
@@ -12,6 +12,14 @@ export interface GenerateFormState {
 
 export interface CopyPlanState {
   error?: string;
+}
+
+export type ResetMode = "structure" | "full";
+
+export interface ResetFormsState {
+  error?: string;
+  updated?: number;
+  schemas?: Record<string, ItinerarySchema>;
 }
 
 export async function generateFormForArtist(
@@ -140,4 +148,83 @@ export async function copyFormPlan(
 
   revalidatePath(`/admin/events/${eventId}/forms`);
   redirect(`/admin/events/${eventId}/forms/${targetFormId}`);
+}
+
+/**
+ * Resets one or more artist forms back onto their role's current template —
+ * the fix for a form generated before a later template edit, which otherwise
+ * has no way to pick up that change. "structure" keeps existing answers,
+ * remapped onto the template's block ids via `syncResponseDataToTemplate`;
+ * "full" discards all answers and re-opens the form for re-submission.
+ * Looks the template up by the artist's role (same lookup `generateFormForArtist`
+ * uses) rather than trusting each form's `source_template_id`, since that can
+ * be null on forms created via `copyFormPlan` cloning from another artist.
+ * Forms whose role has no seeded template are skipped, not failed, so a
+ * partial roster (some roles not yet templated) can still reset the rest.
+ */
+export async function resetFormsToTemplate(
+  eventId: string,
+  formIds: string[],
+  mode: ResetMode
+): Promise<ResetFormsState> {
+  if (formIds.length === 0) return { error: "No forms to reset" };
+
+  const supabase = await createServerSupabaseClient();
+
+  const { data: forms, error: formsError } = await supabase
+    .from("artist_forms")
+    .select("id, form_schema, response_data, status, artists(role)")
+    .eq("event_id", eventId)
+    .in("id", formIds);
+  if (formsError) return { error: formsError.message };
+  if (!forms || forms.length === 0) return { error: "Forms not found" };
+
+  const roles = [...new Set(forms.map((form) => (form.artists as unknown as { role: string }).role))];
+  const { data: templates, error: templatesError } = await supabase
+    .from("templates")
+    .select("id, role, schema")
+    .eq("event_id", eventId)
+    .in("role", roles);
+  if (templatesError) return { error: templatesError.message };
+
+  const templateByRole = new Map((templates ?? []).map((template) => [template.role, template]));
+
+  const schemas: Record<string, ItinerarySchema> = {};
+  let updated = 0;
+
+  for (const form of forms) {
+    const role = (form.artists as unknown as { role: string }).role;
+    const template = templateByRole.get(role);
+    if (!template) continue;
+
+    const templateSchema = template.schema as ItinerarySchema;
+    const nextSchema: ItinerarySchema = JSON.parse(JSON.stringify(templateSchema));
+    const nextResponseData: ResponseData =
+      mode === "structure"
+        ? syncResponseDataToTemplate(templateSchema, form.form_schema as ItinerarySchema, form.response_data as ResponseData)
+        : {};
+
+    const update: Record<string, unknown> = {
+      form_schema: nextSchema,
+      response_data: nextResponseData,
+      source_template_id: template.id,
+    };
+    if (mode === "full") {
+      update.submitted_at = null;
+      update.opened_at = null;
+      if (form.status === "submitted" || form.status === "locked") update.status = "sent";
+    }
+
+    const { error } = await supabase.from("artist_forms").update(update).eq("id", form.id);
+    if (error) return { error: error.message };
+
+    schemas[form.id] = nextSchema;
+    updated += 1;
+  }
+
+  revalidatePath(`/admin/events/${eventId}/forms`);
+  for (const formId of formIds) revalidatePath(`/admin/events/${eventId}/forms/${formId}`);
+  revalidatePath(`/admin/events/${eventId}/plan`);
+
+  return { updated, schemas };
 }

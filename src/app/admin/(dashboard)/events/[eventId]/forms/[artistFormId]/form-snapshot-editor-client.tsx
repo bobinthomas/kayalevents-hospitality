@@ -5,6 +5,7 @@ import { ItineraryEditor } from "@/components/block-editor/itinerary-editor";
 import { TokenLinkActions } from "@/components/admin/token-link-actions";
 import type { ItinerarySchema } from "@/lib/itinerary-schema";
 import { saveFormSnapshot, setFormDeadline } from "../actions";
+import { ResetToTemplateControl } from "../reset-to-template-control";
 
 function toDatetimeLocal(iso: string | null): string {
   if (!iso) return "";
@@ -49,6 +50,18 @@ export function FormSnapshotEditorClient({
   return (
     <div className="flex flex-col gap-6">
       <TokenLinkActions token={token} />
+
+      <div className="flex justify-end">
+        <ResetToTemplateControl
+          eventId={eventId}
+          formIds={[formId]}
+          label="Reset to template"
+          onReset={(schemas) => {
+            const next = schemas[formId];
+            if (next) setSchema(next);
+          }}
+        />
+      </div>
 
       <div className="rounded border border-border bg-surface p-4">
         <label className="flex flex-col gap-1 text-sm text-sand-muted">

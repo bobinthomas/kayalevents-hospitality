@@ -149,6 +149,47 @@ function blockStartTime(block: Block): string | null {
  * render time, same as `sortedSections`, so blocks added/edited out of order
  * still display correctly everywhere without a data migration.
  */
+/**
+ * Rebuilds a form's response data against the current template's block ids,
+ * matching old → new field blocks by `(day label, field title)` — the same
+ * identity `plan-view-model.ts` already trusts to group answers across forms
+ * whose block ids differ (ids drift whenever a snapshot is edited, or a form
+ * is generated/copied at a different time than the template). Used when an
+ * admin resets a drifted per-artist form back onto its template: days/blocks
+ * removed from the template drop their answers, blocks new to the template
+ * start unanswered, everything else survives the id change.
+ */
+export function syncResponseDataToTemplate(
+  templateSchema: ItinerarySchema,
+  oldSchema: ItinerarySchema,
+  oldResponseData: ResponseData
+): ResponseData {
+  const next: ResponseData = {};
+
+  for (const templateSection of templateSchema.sections) {
+    const oldSection = oldSchema.sections.find((section) => section.label === templateSection.label);
+    if (!oldSection) continue;
+
+    for (const templateBlock of templateSection.blocks) {
+      if (templateBlock.kind !== "field") continue;
+      const oldBlock = oldSection.blocks.find(
+        (block): block is FieldBlock => block.kind === "field" && block.title === templateBlock.title
+      );
+      if (!oldBlock) continue;
+
+      if (Object.prototype.hasOwnProperty.call(oldResponseData, oldBlock.id)) {
+        next[templateBlock.id] = oldResponseData[oldBlock.id];
+      }
+      const oldNotesKey = specialRequirementsKey(oldBlock.id);
+      if (Object.prototype.hasOwnProperty.call(oldResponseData, oldNotesKey)) {
+        next[specialRequirementsKey(templateBlock.id)] = oldResponseData[oldNotesKey];
+      }
+    }
+  }
+
+  return next;
+}
+
 export function sortedBlocks<T extends Block>(blocks: T[]): T[] {
   let lastKnownTime = "00:00";
   return blocks
