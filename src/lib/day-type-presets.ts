@@ -3,24 +3,14 @@ import type { Block, Section } from "./itinerary-schema";
 export const DAY_TYPES = ["Arrival", "Rehearsal Day", "Event Day", "Departure Day", "Custom"] as const;
 export type DayType = (typeof DAY_TYPES)[number];
 
-/** Canonical stage rank (Arrival → Rehearsal → Event → Departure). Unrecognized/custom labels sort after all of these, by date. */
-function dayTypeRank(label: string): number {
-  const index = DAY_TYPES.findIndex((type) => type === label);
-  return index === -1 ? DAY_TYPES.length : index;
-}
-
 /**
- * Canonical display order for a schema's days: by stage first (so a
- * mistyped/placeholder date can't knock Arrival out of first place), then by
- * date within the same stage. Applied at read/render time everywhere days
- * are listed (admin builder, artist page, responses view, PDF export) so
- * display order is correct regardless of what order is actually stored.
+ * Canonical display order for a schema's days: strictly by date. Applied at
+ * read/render time everywhere days are listed (admin builder, artist page,
+ * responses view, PDF export) so display order is correct regardless of what
+ * order is actually stored, and regardless of what stage label a day carries.
  */
 export function sortedSections<T extends Pick<Section, "date" | "label">>(sections: T[]): T[] {
-  return [...sections].sort((a, b) => {
-    const rankDiff = dayTypeRank(a.label) - dayTypeRank(b.label);
-    return rankDiff !== 0 ? rankDiff : a.date.localeCompare(b.date);
-  });
+  return [...sections].sort((a, b) => a.date.localeCompare(b.date));
 }
 
 export const VEHICLE_TYPES = ["Car", "Van", "Minibus", "Other"];
